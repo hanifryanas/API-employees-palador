@@ -1,0 +1,159 @@
+swagger: "2.0"
+info:
+  description: "This is the Organization Hierarchy Rest API specification that you need to implement."
+  version: "1.0.0"
+  title: "Organization Hierarchy"
+host: "localhost:8080"
+basePath: "/"
+tags:
+- name: "organization"
+  description: "The organization which has the list of employees and reporting hierarchy"
+schemes:
+- "http"
+paths:
+  /employees:
+    get:
+      tags:
+      - "organization"
+      summary: "Get the list of employees.  Note: In this request, directReports will be empty."
+      description: "Return the list of employees"
+      operationId: "getEmployees"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Employee"
+    post:
+      tags:
+      - "organization"
+      summary: "Add an employee to the organization"
+      description: ""
+      operationId: "addEmployee"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "the employee to be added. Note: directReports will be expected to be empty, and the manager property will contain only the managerId."
+        required: true
+        schema:
+          $ref: "#/definitions/Employee"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Employee"
+        "400":
+          description: "Invalid employee object."
+  /employees/{employeeId}:
+    get:
+      tags:
+      - "organization"
+      summary: "Find employee by Id"
+      description: "Returns a single employee"
+      operationId: "getByEmployeeId"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "employeeId"
+        in: "path"
+        description: "ID of the employee to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "includeReportingTree"
+        in: "query"
+        description: "if set to true, then include the reporting tree, i.e. directReports will be a tree of all employees that would subsequently report to the Employee"
+        required: false
+        type: "boolean"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Employee"
+        "400":
+          description: "Invalid employeeId"
+        "404":
+          description: "Employee not found"
+    delete:
+      tags:
+      - "organization"
+      summary: "Deletes an Employee"
+      description: "Delete a single employee. Must not have a direct report."
+      operationId: "deleteEmployee"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "employeeId"
+        in: "path"
+        description: "employee Id to delete"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "400":
+          description: "Invalid employee Id supplied"
+        "404":
+          description: "employee not found"
+    put:
+      tags:
+      - "organization"
+      summary: "Update an Employee"
+      description: "Note: Direct Reports is expected to be empty. The manager property is expected to only have employeeId."
+      operationId: "updateEmployee"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "employeeId"
+        in: "path"
+        description: "employtt that need to be updated"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Updated employee object"
+        required: true
+        schema:
+          $ref: "#/definitions/Employee"
+      responses:
+        "400":
+          description: "Invalid Employee supplied"
+        "404":
+          description: "Employee not found"
+definitions:
+  Employee:
+    type: "object"
+    required:
+    - "name"
+    properties:
+      employeeId:
+        type: "integer"
+        format: "int64"
+        example: 1
+      name:
+        type: "string"
+        example: "John Smith"
+      status:
+        type: "string"
+        description: "Status of the employee"
+        enum:
+        - "active"
+        - "inactive"
+      manager:
+        $ref: "#/definitions/Employee"
+        example:
+          employeeId: 2
+          name: "Mike Rohan"
+          status: active
+      directReports:
+        type: "array"
+        items:
+          $ref: "#/definitions/Employee"
+          example:
+            employeeId: 4
+            name: "Julia Maroni"
+            status: active
